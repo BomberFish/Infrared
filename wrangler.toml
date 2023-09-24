@@ -1,6 +1,11 @@
 name = "infrared"
 main = "src/index.ts"
 compatibility_date = "2023-09-18"
+compatibility_flags = ["nodejs_compat"]
+global_async_io = true
+global_timers = true
+global_random = true
+# node_compat = true
 
 # Variable bindings. These are arbitrary, plaintext strings (similar to environment variables)
 # Note: Use secrets to store sensitive data.
