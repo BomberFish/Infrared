@@ -1,5 +1,5 @@
 name = "infrared"
-main = "src/index.ts"
+main = "src/index.js"
 compatibility_date = "2023-09-18"
 compatibility_flags = ["nodejs_compat"]
 global_async_io = true
@@ -16,8 +16,12 @@ global_random = true
 # Bind a KV Namespace. Use KV as persistent storage for small key-value pairs.
 # Docs: https://developers.cloudflare.com/workers/runtime-apis/kv
 # [[kv_namespaces]]
-# binding = "MY_KV_NAMESPACE"
-# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# binding = "BARE"
+# id = "8e47da9d113342d8bf757ea6290d8bd0"
+
+kv_namespaces = [
+  { binding = "BARE", id = "8e47da9d113342d8bf757ea6290d8bd0" }
+]
 
 # Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
 # Docs: https://developers.cloudflare.com/r2/api/workers/workers-api-usage/
