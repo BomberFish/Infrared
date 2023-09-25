@@ -746,9 +746,9 @@ class BareError extends Error {
 
 }
 const project = {
-	name: 'bare-server-worker',
-	description: 'TOMPHTTP Cloudflare Bare Server',
-	repository: 'https://github.com/tomphttp/bare-server-worker',
+	name: 'Infrared Bare Server',
+	description: 'TompHTTP-compliant proxy server running on Cloudflare Workers.',
+	website: 'https://infrared.bomberfish.workers.dev',
 	version: '1.2.2'
 };
 function json(status, json) {
@@ -1555,7 +1555,11 @@ let kvNS = BARE
 const kvDB = new KVAdapter(kvNS)
 const bare = createBareServer('/', {
 	logErrors: true,
-	database: kvDB
+	database: kvDB,
+	maintainer: {
+		email: 'hariz@bomberfish.ca',
+		website: 'https://bomberfish.ca'
+	}
 });
 
 addEventListener('fetch', event => {
