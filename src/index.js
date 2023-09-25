@@ -1,5 +1,4 @@
 //bomberfish
-
 class KVAdapter {
 	ns;
 
@@ -749,7 +748,7 @@ const project = {
 	name: 'Infrared Bare Server',
 	description: 'TompHTTP-compliant proxy server running on Cloudflare Workers.',
 	website: 'https://infrared.bomberfish.workers.dev',
-	version: '1.2.2'
+	version: '0.0.1'
 };
 function json(status, json) {
 	return new Response(JSON.stringify(json, null, '\t'), {
