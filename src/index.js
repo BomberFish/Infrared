@@ -1564,6 +1564,10 @@ const bare = createBareServer('/', {
 addEventListener('fetch', event => {
 	cleanupDatabase(kvDB);
 	if (bare.shouldRoute(event.request)) { 
-		event.respondWith(bare.routeRequest(event.request));
+		event.respondWith(
+			bare.routeRequest(event.request)
+		);
+	} else {
+		throw "Request not being routed!"
 	}
 });
