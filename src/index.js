@@ -1,4 +1,6 @@
 //bomberfish
+
+var packageJson = require('../package.json');
 class KVAdapter {
 	ns;
 
@@ -748,7 +750,7 @@ const project = {
 	name: 'Infrared Bare Server',
 	description: 'TompHTTP-compliant proxy server running on Cloudflare Workers.',
 	website: 'https://infrared.bomberfish.workers.dev',
-	version: '0.0.1'
+	version: packageJson.version
 };
 function json(status, json) {
 	return new Response(JSON.stringify(json, null, '\t'), {
@@ -1552,7 +1554,7 @@ function createBareServer(directory, init = {}) {
 
 let kvNS = BARE
 const kvDB = new KVAdapter(kvNS)
-const bare = createBareServer('/', {
+const bareServer = createBareServer('/', {
 	logErrors: true,
 	database: kvDB,
 	maintainer: {
@@ -1563,11 +1565,9 @@ const bare = createBareServer('/', {
 
 addEventListener('fetch', event => {
 	cleanupDatabase(kvDB);
-	if (bare.shouldRoute(event.request)) {
+	if (bareServer.shouldRoute(event.request)) {
 		event.respondWith(
-			bare.routeRequest(event.request)
+			bareServer.routeRequest(event.request)
 		);
-	} else {
-		throw "Request not being routed!"
 	}
 });
