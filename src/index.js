@@ -799,6 +799,7 @@ class Server extends EventTarget {
 	}
 
 	async routeRequest(request) {
+		console.log('Routing a request!')
 		const service = new URL(request.url).pathname.slice(this.directory.length - 1);
 		let response;
 		const isSocket = request.headers.get('upgrade') === 'websocket';
@@ -1132,6 +1133,7 @@ const tunnelSocket$1 = async (request, options) => {
 };
 
 function registerV1(server) {
+	console.log('Registering v1 endpoint')
 	server.routes.set('/v1/', tunnelRequest$1);
 	server.routes.set('/v1/ws-new-meta', wsNewMeta);
 	server.routes.set('/v1/ws-meta', wsMeta);
@@ -1516,6 +1518,7 @@ const tunnelSocket = async (request, options) => {
 };
 
 function registerV2(server) {
+	console.log('Registering v2 endpoint')
 	server.routes.set('/v2/', tunnelRequest);
 	server.routes.set('/v2/ws-new-meta', newMeta);
 	server.routes.set('/v2/ws-meta', getMeta);
@@ -1528,6 +1531,7 @@ function registerV2(server) {
  */
 
 function createBareServer(directory, init = {}) {
+	console.log("Starting server at ", directory, " with options " + JSON.stringify(init) + ".");
 	if (typeof directory !== 'string') throw new Error('Directory must be specified.');
 	if (!directory.startsWith('/') || !directory.endsWith('/')) throw new RangeError('Directory must start and end with /');
 	init.logErrors ??= false;
