@@ -1,6 +1,6 @@
 {
   "name": "infrared",
-  "version": "0.0.1",
+  "version": "0.9.9",
   "private": true,
   "scripts": {
     "deploy": "wrangler deploy",
