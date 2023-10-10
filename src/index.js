@@ -1550,6 +1550,7 @@ function createBareServer(directory, init = {}) {
 	});
 	registerV1(server);
 	registerV2(server);
+	// TODO: v3 support!!!!!!
 	server.addEventListener('close', () => {
 		for (const cb of cleanup) cb();
 	});
