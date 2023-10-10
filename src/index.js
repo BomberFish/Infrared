@@ -1398,6 +1398,178 @@ function readHeaders(request) {
 	};
 }
 
+function readHeadersV3(request) {
+	const remote = Object.setPrototypeOf({}, null);
+	const sendHeaders = Object.setPrototypeOf({}, null);
+	const passHeaders = [...defaultPassHeaders];
+	const passStatus = [];
+	const forwardHeaders = [...defaultForwardHeaders]; // should be unique
+
+	const cache = new URL(request.url).searchParams.has('cache');
+
+	if (cache) {
+		passHeaders.push(...defaultCachePassHeaders);
+		passStatus.push(cacheNotModified);
+		forwardHeaders.push(...defaultCacheForwardHeaders);
+	}
+
+	const headers = joinHeaders(request.headers);
+
+	// for (const remoteProp of ['host', 'port', 'protocol', 'path']) {
+	const header = `x-bare-url`;
+
+	if (headers.has(header)) {
+		const value = headers.get(header);
+
+		switch (remoteProp) {
+			case 'port':
+				if (isNaN(parseInt(value))) {
+					throw new BareError(400, {
+						code: 'INVALID_BARE_HEADER',
+						id: `request.headers.${header}`,
+						message: `Header was not a valid integer.`
+					});
+				}
+
+				break;
+
+			case 'protocol':
+				if (!validProtocols.includes(value)) {
+					throw new BareError(400, {
+						code: 'INVALID_BARE_HEADER',
+						id: `request.headers.${header}`,
+						message: `Header was invalid`
+					});
+				}
+
+				break;
+		}
+
+		remote = value;
+	} else {
+		throw new BareError(400, {
+			code: 'MISSING_BARE_HEADER',
+			id: `request.headers.${header}`,
+			message: `Header was not specified.`
+		});
+	}
+	// }
+
+	if (headers.has('x-bare-headers')) {
+		try {
+			const json = JSON.parse(headers.get('x-bare-headers'));
+
+			for (const header in json) {
+				const value = json[header];
+
+				if (typeof value === 'string') {
+					sendHeaders[header] = value;
+				} else if (Array.isArray(value)) {
+					const array = [];
+
+					for (const val in value) {
+						if (typeof val !== 'string') {
+							throw new BareError(400, {
+								code: 'INVALID_BARE_HEADER',
+								id: `bare.headers.${header}`,
+								message: `Header was not a String.`
+							});
+						}
+
+						array.push(val);
+					}
+
+					sendHeaders[header] = array;
+				} else {
+					throw new BareError(400, {
+						code: 'INVALID_BARE_HEADER',
+						id: `bare.headers.${header}`,
+						message: `Header was not a String.`
+					});
+				}
+			}
+		} catch (error) {
+			if (error instanceof SyntaxError) {
+				throw new BareError(400, {
+					code: 'INVALID_BARE_HEADER',
+					id: `request.headers.x-bare-headers`,
+					message: `Header contained invalid JSON. (${error.message})`
+				});
+			} else {
+				throw error;
+			}
+		}
+	} else {
+		throw new BareError(400, {
+			code: 'MISSING_BARE_HEADER',
+			id: `request.headers.x-bare-headers`,
+			message: `Header was not specified.`
+		});
+	}
+
+	if (headers.has('x-bare-pass-status')) {
+		const parsed = headers.get('x-bare-pass-status').split(splitHeaderValue);
+
+		for (const value of parsed) {
+			const number = parseInt(value);
+
+			if (isNaN(number)) {
+				throw new BareError(400, {
+					code: 'INVALID_BARE_HEADER',
+					id: `request.headers.x-bare-pass-status`,
+					message: `Array contained non-number value.`
+				});
+			} else {
+				passStatus.push(number);
+			}
+		}
+	}
+
+	if (headers.has('x-bare-pass-headers')) {
+		const parsed = headers.get('x-bare-pass-headers').split(splitHeaderValue);
+
+		for (let header of parsed) {
+			header = header.toLowerCase();
+
+			if (forbiddenPassHeaders.includes(header)) {
+				throw new BareError(400, {
+					code: 'FORBIDDEN_BARE_HEADER',
+					id: `request.headers.x-bare-forward-headers`,
+					message: `A forbidden header was passed.`
+				});
+			} else {
+				passHeaders.push(header);
+			}
+		}
+	}
+
+	if (headers.has('x-bare-forward-headers')) {
+		const parsed = headers.get('x-bare-forward-headers').split(splitHeaderValue);
+
+		for (let header of parsed) {
+			header = header.toLowerCase();
+
+			if (forbiddenForwardHeaders.includes(header)) {
+				throw new BareError(400, {
+					code: 'FORBIDDEN_BARE_HEADER',
+					id: `request.headers.x-bare-forward-headers`,
+					message: `A forbidden header was forwarded.`
+				});
+			} else {
+				forwardHeaders.push(header);
+			}
+		}
+	}
+
+	return {
+		remote,
+		sendHeaders,
+		passHeaders,
+		passStatus,
+		forwardHeaders
+	};
+}
+
 const tunnelRequest = async request => {
 	const {
 		remote,
@@ -1406,6 +1578,37 @@ const tunnelRequest = async request => {
 		passStatus,
 		forwardHeaders
 	} = readHeaders(request);
+	loadForwardedHeaders(forwardHeaders, sendHeaders, request);
+	const response = await bareFetch(request, request.signal, sendHeaders, remote);
+	const responseHeaders = new Headers();
+
+	for (const [header, value] of passHeaders) {
+		if (!response.headers.has(header)) continue;
+		responseHeaders.set(header, value);
+	}
+
+	const status = passStatus.includes(response.status) ? response.status : 200;
+
+	if (status !== cacheNotModified) {
+		responseHeaders.set('x-bare-status', response.status.toString());
+		responseHeaders.set('x-bare-status-text', response.statusText);
+		responseHeaders.set('x-bare-headers', JSON.stringify(Object.fromEntries(response.headers)));
+	}
+
+	return new Response(response.body, {
+		status,
+		headers: splitHeaders(responseHeaders)
+	});
+};
+
+const tunnelRequestV3 = async request => {
+	const {
+		remote,
+		sendHeaders,
+		passHeaders,
+		passStatus,
+		forwardHeaders
+	} = readHeadersV3(request);
 	loadForwardedHeaders(forwardHeaders, sendHeaders, request);
 	const response = await bareFetch(request, request.signal, sendHeaders, remote);
 	const responseHeaders = new Headers();
@@ -1525,6 +1728,12 @@ function registerV2(server) {
 	server.socketRoutes.set('/v2/', tunnelSocket);
 }
 
+function registerV3(server) {
+	console.log('Registering v3 endpoint')
+	server.routes.set('/v3/', tunnelRequestV3);
+	server.socketRoutes.set('/v3/', tunnelSocket);
+}
+
 /**
  * Create a Bare server.
  * This will handle all lifecycles for unspecified options (httpAgent, httpsAgent, metaMap).
@@ -1550,7 +1759,7 @@ function createBareServer(directory, init = {}) {
 	});
 	registerV1(server);
 	registerV2(server);
-	// TODO: v3 support!!!!!!
+	registerV3(server);
 	server.addEventListener('close', () => {
 		for (const cb of cleanup) cb();
 	});
