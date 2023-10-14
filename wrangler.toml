@@ -3,5 +3,5 @@ main = "src/index.js"
 compatibility_date = "2023-09-25"
 
 kv_namespaces = [
-  { binding = "BARE", id = "8e47da9d113342d8bf757ea6290d8bd0" }
+  { binding = "BARE", id = "8e47da9d113342d8bf757ea6290d8bd0", preview_id = "7a171b59408d4cb49197604dc840ae05" }
 ]
