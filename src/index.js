@@ -1399,7 +1399,7 @@ function readHeaders(request) {
 }
 
 function readHeadersV3(request) {
-	const remote = Object.setPrototypeOf({}, null);
+	var remote = Object.setPrototypeOf({}, null);
 	const sendHeaders = Object.setPrototypeOf({}, null);
 	const passHeaders = [...defaultPassHeaders];
 	const passStatus = [];
