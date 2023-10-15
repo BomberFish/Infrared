@@ -749,7 +749,8 @@ class BareError extends Error {
 const project = {
 	name: 'Infrared Bare Server',
 	description: 'TompHTTP-compliant proxy server running on Cloudflare Workers.',
-	website: 'https://infrared.bomberfish.workers.dev',
+	website: 'https://infrared.bomberfish.ca',
+	repository: 'https://github.com/BomberFish/Infrared',
 	version: packageJson.version
 };
 function json(status, json) {
@@ -791,7 +792,7 @@ class Server extends EventTarget {
 
 	get instanceInfo() {
 		return {
-			versions: ['v1', 'v2'],
+			versions: ['v1', 'v2', 'v3'],
 			language: 'Cloudflare',
 			maintainer: this.options.maintainer,
 			project
