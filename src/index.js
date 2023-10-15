@@ -908,6 +908,17 @@ async function bareFetch(request, signal, requestHeaders, remote) {
 		redirect: 'manual'
 	});
 }
+
+async function bareFetchV3(request, signal, requestHeaders, remote) {
+	return await fetch(remote, {
+		headers: requestHeaders,
+		method: request.method,
+		body: noBody.includes(request.method) ? undefined : await request.blob(),
+		signal,
+		redirect: 'manual'
+	});
+}
+
 async function upgradeBareFetch(request, signal, requestHeaders, remote) {
 	const res = await fetch(`${remote.protocol}//${remote.host}:${remote.port}${remote.path}`, {
 		headers: requestHeaders,
@@ -1400,7 +1411,7 @@ function readHeaders(request) {
 }
 
 function readHeadersV3(request) {
-	var remote = Object.setPrototypeOf({}, null);
+	var remote = ""
 	const sendHeaders = Object.setPrototypeOf({}, null);
 	const passHeaders = [...defaultPassHeaders];
 	const passStatus = [];
@@ -1585,7 +1596,7 @@ const tunnelRequestV3 = async request => {
 		forwardHeaders
 	} = readHeadersV3(request);
 	loadForwardedHeaders(forwardHeaders, sendHeaders, request);
-	const response = await bareFetch(request, request.signal, sendHeaders, remote);
+	const response = await bareFetchV3(request, request.signal, sendHeaders, remote);
 	const responseHeaders = new Headers();
 
 	for (const [header, value] of passHeaders) {
