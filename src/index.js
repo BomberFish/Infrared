@@ -1417,35 +1417,9 @@ function readHeadersV3(request) {
 	const headers = joinHeaders(request.headers);
 
 	// for (const remoteProp of ['host', 'port', 'protocol', 'path']) {
-	const header = `x-bare-url`;
 
-	if (headers.has(header)) {
-		const value = headers.get(header);
-
-		switch (remoteProp) {
-			case 'port':
-				if (isNaN(parseInt(value))) {
-					throw new BareError(400, {
-						code: 'INVALID_BARE_HEADER',
-						id: `request.headers.${header}`,
-						message: `Header was not a valid integer.`
-					});
-				}
-
-				break;
-
-			case 'protocol':
-				if (!validProtocols.includes(value)) {
-					throw new BareError(400, {
-						code: 'INVALID_BARE_HEADER',
-						id: `request.headers.${header}`,
-						message: `Header was invalid`
-					});
-				}
-
-				break;
-		}
-
+	if (headers.has('x-bare-url')) {
+		const value = headers.get('x-bare-url');
 		remote = value;
 	} else {
 		throw new BareError(400, {
